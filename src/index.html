@@ -1,15 +1,51 @@
 <!DOCTYPE html>
 <html lang="fr">
-  <head>
-    <title class="p-title">Project Title</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8" />
-    <link rel="stylesheet" type="text/css" href="css/chota.css" />
-    <link rel="stylesheet" type="text/css" href="css/style.css" />
-    <script type="module" src="script/index.js"></script>
-  </head>
 
-  <body>
+<head>
+  <title class="p-title">Project Title</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8" />
+  <link rel="stylesheet" type="text/css" href="css/chota.css" />
+  <link rel="stylesheet" type="text/css" href="css/style.css" />
+  <script type="module" src="script/index.js"></script>
+  <style>
+    body.dark {
+      --bg-color: #181818;
+      --bg-secondary-color: #1f1f1f;
+      --font-color: #D9D9D9;
+      --color-grey: #ccc;
+      --color-darkGrey: #777;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="top" class="container" role="document">
     <h1 class="p-title">Project Title</h1>
-    
-  </body>
+
+    <nav class="tabs is-full">
+      <a id="tab-link-data" class="active" href="#">Données</a>
+      <a id="tab-link-parameters" href="#">Paramètres</a>
+    </nav>
+
+    <div id="tab-content-data" class="tab-content">
+      <h2>Données</h2>
+      <div id="view-data">
+      </div>
+    </div>
+
+    <div id="tab-content-parameters" class="tab-content is-hidden">
+      <h2>Paramètres</h2>
+      <div id="view-parameters">
+      </div>
+    </div>
+  </div>
+</body>
+
+<script>
+  if (window.matchMedia &&
+    window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.body.classList.add('dark');
+  }
+</script>
+
 </html>
