@@ -30,7 +30,7 @@ export class WebSocketHelper<T> {
 
   private onMessage(event: { data: string }): void {
     console.log("WebSocket message received");
-    let dataFromServer = JSON.parse(event.data);
+    let dataFromServer:T = JSON.parse(event.data);
     this.bindMessageEvent(dataFromServer);
   }
 
