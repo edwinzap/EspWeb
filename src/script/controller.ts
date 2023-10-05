@@ -24,7 +24,6 @@ export class Controller {
   private wsParametersView: WebSocketHelper<Parameter[]>;
 
   constructor() {
-    console.log("constructor from controller");
     this.init();
     this.fake();
   }

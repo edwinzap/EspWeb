@@ -2,14 +2,14 @@ import { Data } from "./models/data.js";
 import { Value } from "./models/value.js";
 import { Parameter } from "./models/parameter.js";
 import { Project } from "./project.js";
-import { ParameterFormHelper } from "./parameterFormHelper.js";
+import { OnParameterChanged, ParameterFormHelper } from "./parameterFormHelper.js";
 
 /**
  * "view.ts" contient les fonctions/éléments permettant d'initialiser et d'accéder aux éléments visuels de la page.
  */
-export class View {
+export class View implements OnParameterChanged {
 
-  public onParametersFormSubmit:(values:Value[]) => void;
+  public onParametersFormSubmit: (values: Value[]) => void;
 
   private dataTabLink: HTMLElement;
   private parametersTabLink: HTMLElement;
@@ -18,12 +18,16 @@ export class View {
   private dataView: HTMLDivElement;
   private parametersView: HTMLDivElement;
 
+  private parametersSubmit: HTMLInputElement;
+  private parameterFormHelper:ParameterFormHelper;
+
   constructor() {
     this.init();
   }
 
   private init(): void {
-    console.log("view.init");
+    this.parameterFormHelper = new ParameterFormHelper();
+    this.parameterFormHelper.listener = this;
     this.initHtmlElements();
     this.initForProject();
   }
@@ -99,19 +103,30 @@ export class View {
     }
   }
 
+  public onParametersChanged(id:number): void {
+    this.canSubmitParameters(true);
+  }
+
+  private canSubmitParameters(canSubmit: boolean) {
+    if (this.parametersSubmit) {
+      this.parametersSubmit.disabled = !canSubmit;
+    }
+  }
+
   public createParametersView(parameters: Parameter[]) {
     let formElement = document.createElement('form') as HTMLFormElement;
+
     for (let i = 0; i < parameters.length; i++) {
       const parameter = parameters[i];
-      const element = ParameterFormHelper.getParameterElement(parameter);
+      const element = this.parameterFormHelper.getParameterElement(parameter);
 
       formElement.appendChild(element);
     }
-    let submitButton = document.createElement('input') as HTMLInputElement;
-    submitButton.type = 'submit';
-    submitButton.innerText = "Valider"
+    this.parametersSubmit = document.createElement('input') as HTMLInputElement;
+    this.parametersSubmit.type = 'submit';
+    this.parametersSubmit.innerText = "Valider"
 
-    formElement.appendChild(submitButton);
+    formElement.appendChild(this.parametersSubmit);
     formElement.onsubmit = (event) => {
       event.preventDefault();
       this.submitParametersForm();
@@ -122,14 +137,14 @@ export class View {
   private submitParametersForm() {
     console.log("Submit form");
     let inputs = this.parametersView.getElementsByClassName('parameter-input');
-    let values:Value[] = [];
+    let values: Value[] = [];
 
     for (let i = 0; i < inputs.length; i++) {
       const input = inputs[i];
       const parameterId = Number.parseInt(input.id.split('-')[1]);
-      let value:string;
-      
-      if (input.classList.contains('radio-container')){
+      let value: string;
+
+      if (input.classList.contains('radio-container')) {
         const radios = input.getElementsByTagName('input');
         value = Array.from(radios).find(radio => (radio as HTMLInputElement).checked).value;
       }
@@ -145,6 +160,7 @@ export class View {
       values.push(parameterValue);
     }
     this.onParametersFormSubmit(values);
+    this.canSubmitParameters(false);
   }
 
   public updateDataValue(value: Value) {

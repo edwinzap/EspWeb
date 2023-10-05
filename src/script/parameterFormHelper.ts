@@ -1,8 +1,9 @@
 import { InputType, Parameter } from "./models/parameter.js";
 
 export class ParameterFormHelper {
+    public listener:OnParameterChanged;
 
-    public static getParameterElement(parameter: Parameter): HTMLElement {
+    public getParameterElement(parameter: Parameter): HTMLElement {
         let pElement = document.createElement('p') as HTMLParagraphElement;
 
         let labelElement = document.createElement('label') as HTMLLabelElement;
@@ -31,16 +32,17 @@ export class ParameterFormHelper {
         return pElement;
     }
 
-    private static getInputId(id: number): string {
+    private getInputId(id: number): string {
         return 'parameter-' + id;
     }
 
-    private static createInputForParameter(parameter: Parameter): HTMLElement {
+    private createInputForParameter(parameter: Parameter): HTMLElement {
         let inputElement = document.createElement('input') as HTMLInputElement;
         inputElement.id = this.getInputId(parameter.id);
         inputElement.name = parameter.id.toString();
         inputElement.className = 'parameter-input';
-        
+        inputElement.oninput = () => this.listener?.onParametersChanged(parameter.id);
+
         if (parameter.value) {
             inputElement.value = parameter.value;
         }
@@ -79,7 +81,7 @@ export class ParameterFormHelper {
         }
     }
 
-    private static createRadioForParameter(parameter: Parameter): HTMLElement {
+    private createRadioForParameter(parameter: Parameter): HTMLElement {
         let radioContainer = document.createElement('div') as HTMLDivElement;
         radioContainer.id = this.getInputId(parameter.id);
         radioContainer.className = 'parameter-input radio-container';
@@ -97,6 +99,7 @@ export class ParameterFormHelper {
             radioElement.type = 'radio';
             radioElement.value = option.value;
             radioElement.name = this.getInputId(parameter.id);
+            radioElement.onchange = () => this.listener?.onParametersChanged(parameter.id);
 
             if (option.value == parameter.value) {
                 radioElement.checked = true;
@@ -108,7 +111,7 @@ export class ParameterFormHelper {
         return radioContainer;
     }
 
-    private static createSelectForParameter(parameter: Parameter): HTMLElement {
+    private createSelectForParameter(parameter: Parameter): HTMLElement {
 
         let selectElement = document.createElement('select') as HTMLSelectElement;
         selectElement.id = this.getInputId(parameter.id);
@@ -117,6 +120,7 @@ export class ParameterFormHelper {
         let defaultOption = document.createElement('option') as HTMLOptionElement;
         defaultOption.innerText = 'Sélectionner une option...';
         selectElement.appendChild(defaultOption);
+        selectElement.oninput= () => this.listener?.onParametersChanged(parameter.id);
 
         for (let i = 0; i < parameter.options.length; i++) {
             const option = parameter.options[i];
@@ -131,4 +135,8 @@ export class ParameterFormHelper {
 
         return selectElement;
     }
+}
+
+export interface OnParameterChanged {
+    onParametersChanged(id:number):void;
 }
