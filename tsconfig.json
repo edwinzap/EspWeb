@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "outDir": "./dist",
+    "noImplicitReturns": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    //"strict": true
+  }
+}
+
+//Execute Run Build Task Ctrl+Shift+B and select tsc: watch-....
