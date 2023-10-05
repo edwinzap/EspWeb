@@ -30,6 +30,16 @@ export class Controller {
   }
 
   private init() {
+    //this.initWebSockets();
+    this.view = new View();
+    this.bindView();
+  }
+
+  private bindView() {
+    this.view.onParametersFormSubmit = this.onParametersSubmit;
+  }
+
+  private initWebSockets() {
     this.wsDataView = new WebSocketHelper(this.wsDataViewPath);
     this.wsDataView.bindMessageEvent = (data) => this.onWsDataViewReceived(data);
     //this.wsDataView.bindOnOpen = () => this.onParametersWebSocketOpen();
@@ -41,8 +51,6 @@ export class Controller {
     this.wsParametersView = new WebSocketHelper(this.wsParametersViewPath);
     this.wsParametersView.bindMessageEvent = (parameters) => this.onWsParametersViewReceived(parameters);
     //this.wsParametersView.bindOnOpen = () => this.onParametersWebSocketOpen();
-
-    this.view = new View();
   }
 
   private onWsDataViewReceived(data: Data[]) {
@@ -57,6 +65,12 @@ export class Controller {
     this.view.createParametersView(parameters);
   }
 
+  private onParametersSubmit(values: Value[]) {
+    console.log("Parameters send");
+    console.log(values);
+  }
+
+  //#region Fake
   private fake() {
     this.onWsDataViewReceived(this.generateFakeData());
     this.onWsParametersViewReceived(this.generateFakeParameters());
@@ -82,14 +96,14 @@ export class Controller {
     let parameters: Parameter[] = [];
 
     let parameter1 = new Parameter(1, 'Prénom', InputType.Text, 'Miguel');
-    
+
     let parameter2 = new Parameter(2, 'Nom', InputType.Text, 'Forget');
-    
+
     let parameter3 = new Parameter(3, 'Taille', InputType.Number, '172');
     parameter3.unit = "cm";
-    
+
     let parameter4 = new Parameter(4, 'Date de naissance', InputType.Date, "1995-05-09");
-    
+
     let parameter5 = new Parameter(5, 'Pays', InputType.Select, "BE");
     parameter5.options = [
       new InputOption("FR", "France"),
@@ -97,7 +111,7 @@ export class Controller {
       new InputOption("LU", "Luxembourg"),
       new InputOption("DE", "Allemagne")
     ];
-    
+
     let parameter6 = new Parameter(6, 'Sexe', InputType.Radio, "m");
     parameter6.options = [
       new InputOption("f", "Femme"),
@@ -107,4 +121,5 @@ export class Controller {
     parameters.push(parameter1, parameter2, parameter3, parameter4, parameter5, parameter6);
     return parameters;
   }
+  //#endregion
 }

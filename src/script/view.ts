@@ -1,25 +1,27 @@
 import { Data } from "./models/data.js";
 import { Value } from "./models/value.js";
-import { InputType, Parameter } from "./models/parameter.js";
+import { Parameter } from "./models/parameter.js";
 import { Project } from "./project.js";
+import { ParameterFormHelper } from "./parameterFormHelper.js";
 
 /**
  * "view.ts" contient les fonctions/éléments permettant d'initialiser et d'accéder aux éléments visuels de la page.
  */
 export class View {
 
-  dataTabLink: HTMLElement;
-  parametersTabLink: HTMLElement;
-  dataTabContent: HTMLElement;
-  parametersTabContent: HTMLElement;
-  dataView: HTMLDivElement;
-  parametersView: HTMLDivElement;
+  public onParametersFormSubmit:(values:Value[]) => void;
+
+  private dataTabLink: HTMLElement;
+  private parametersTabLink: HTMLElement;
+  private dataTabContent: HTMLElement;
+  private parametersTabContent: HTMLElement;
+  private dataView: HTMLDivElement;
+  private parametersView: HTMLDivElement;
 
   constructor() {
     this.init();
   }
 
-  // Récupère les éléments de l'html suivant leurs ID
   private init(): void {
     console.log("view.init");
     this.initHtmlElements();
@@ -51,10 +53,6 @@ export class View {
         element.innerText = text;
       }
     }
-  }
-
-  private setValue(value: string, element: HTMLElement): void {
-    element.innerHTML = value;
   }
 
   private onTabClicked(id: string) {
@@ -102,116 +100,51 @@ export class View {
   }
 
   public createParametersView(parameters: Parameter[]) {
+    let formElement = document.createElement('form') as HTMLFormElement;
     for (let i = 0; i < parameters.length; i++) {
       const parameter = parameters[i];
-      let pElement = document.createElement('p') as HTMLParagraphElement;
+      const element = ParameterFormHelper.getParameterElement(parameter);
 
-      let labelElement = document.createElement('label') as HTMLLabelElement;
-      labelElement.className = 'parameter-label'
-      labelElement.innerText = parameter.label;
-      pElement.appendChild(labelElement);
-
-      let optionsInput: InputType[] = [InputType.Radio, InputType.Select];
-
-      const inputId = 'parameter-' + parameter.id;
-
-      // Text, Number, Date
-      if (!optionsInput.some(e => e == parameter.inputType)) {
-        let inputElement = document.createElement('input') as HTMLInputElement;
-        inputElement.id = inputId;
-        inputElement.name = parameter.id.toString();
-        inputElement.className = 'parameter-input';
-        labelElement.htmlFor = inputId;
-        if (parameter.value) {
-          inputElement.value = parameter.value;
-        }
-
-        switch (parameter.inputType) {
-          case InputType.Text:
-            inputElement.type = 'text'
-            break;
-          case InputType.Date:
-            inputElement.type = 'date';
-            break;
-          case InputType.Number:
-            inputElement.type = 'number';
-        }
-
-        if (parameter.unit) {
-          let inputGroupElement = document.createElement('div') as HTMLDivElement;
-          inputGroupElement.className = 'input-group';
-
-          let inputAppendElement = document.createElement('div') as HTMLDivElement;
-          inputAppendElement.className = 'input-group-append';
-
-          let spanAppendElement = document.createElement('span') as HTMLSpanElement;
-          spanAppendElement.innerText = parameter.unit;
-          spanAppendElement.className = "input-group-text"
-          
-          inputAppendElement.appendChild(spanAppendElement);
-
-          inputGroupElement.appendChild(inputElement);
-          inputGroupElement.appendChild(inputAppendElement);
-
-          pElement.appendChild(inputGroupElement);
-        }
-        else {
-          pElement.appendChild(inputElement);
-        }
-      }
-      // Select
-      else if (parameter.inputType == InputType.Select) {
-        let selectElement = document.createElement('select') as HTMLSelectElement;
-        selectElement.id = inputId;
-        selectElement.className = 'parameter-select';
-
-        let defaultOption = document.createElement('option') as HTMLOptionElement;
-        defaultOption.innerText = 'Sélectionner une option...';
-        selectElement.appendChild(defaultOption);
-
-        for (let i = 0; i < parameter.options.length; i++) {
-          const option = parameter.options[i];
-          let optionElement = document.createElement('option') as HTMLOptionElement;
-          optionElement.value = option.value;
-          optionElement.innerText = option.text;
-          if (option.value == parameter.value) {
-            optionElement.selected = true;
-          }
-          selectElement.appendChild(optionElement);
-        }
-        pElement.appendChild(selectElement);
-      }
-      // Radio
-      else if (parameter.inputType == InputType.Radio) {
-        let radioContainer = document.createElement('div') as HTMLDivElement;
-        radioContainer.id = inputId;
-        for (let i = 0; i < parameter.options.length; i++) {
-          const option = parameter.options[i];
-          const radioId = 'parameter-radio-' + option.value;
-
-          let radioLabelElement = document.createElement('label') as HTMLLabelElement;
-          radioLabelElement.innerText = option.text;
-          radioLabelElement.htmlFor = radioId;
-
-          let radioElement = document.createElement('input') as HTMLInputElement;
-          radioElement.id = radioId;
-          radioElement.type = 'radio';
-          radioElement.value = option.value;
-          radioElement.name = inputId;
-
-          if (option.value == parameter.value) {
-            radioElement.checked = true;
-          }
-
-          radioContainer.appendChild(radioElement);
-          radioContainer.appendChild(radioLabelElement);
-        }
-
-        pElement.appendChild(radioContainer);
-      }
-
-      this.parametersView.appendChild(pElement);
+      formElement.appendChild(element);
     }
+    let submitButton = document.createElement('input') as HTMLInputElement;
+    submitButton.type = 'submit';
+    submitButton.innerText = "Valider"
+
+    formElement.appendChild(submitButton);
+    formElement.onsubmit = (event) => {
+      event.preventDefault();
+      this.submitParametersForm();
+    }
+    this.parametersView.appendChild(formElement);
+  }
+
+  private submitParametersForm() {
+    console.log("Submit form");
+    let inputs = this.parametersView.getElementsByClassName('parameter-input');
+    let values:Value[] = [];
+
+    for (let i = 0; i < inputs.length; i++) {
+      const input = inputs[i];
+      const parameterId = Number.parseInt(input.id.split('-')[1]);
+      let value:string;
+      
+      if (input.classList.contains('radio-container')){
+        const radios = input.getElementsByTagName('input');
+        value = Array.from(radios).find(radio => (radio as HTMLInputElement).checked).value;
+      }
+      else {
+        if (input instanceof HTMLInputElement) {
+          value = input.value;
+        }
+        else if (input instanceof HTMLSelectElement) {
+          value = input.value;
+        }
+      }
+      const parameterValue = new Value(parameterId, value);
+      values.push(parameterValue);
+    }
+    this.onParametersFormSubmit(values);
   }
 
   public updateDataValue(value: Value) {
