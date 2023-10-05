@@ -77,6 +77,8 @@ export class View implements OnParameterChanged {
   }
 
   public createDataView(data: Data[]) {
+    this.dataView.innerHTML = '';
+    
     for (let i = 0; i < data.length; i++) {
       const item = data[i];
       let container = document.createElement('div') as HTMLDivElement;
@@ -103,17 +105,19 @@ export class View implements OnParameterChanged {
     }
   }
 
-  public onParametersChanged(id:number): void {
-    this.canSubmitParameters(true);
-  }
-
-  private canSubmitParameters(canSubmit: boolean) {
-    if (this.parametersSubmit) {
-      this.parametersSubmit.disabled = !canSubmit;
-    }
+  public updateDataValues(values: Value[]) {
+    values.forEach((value) => {
+      const id = 'data-' + value.id;
+      let dataValue = document.getElementById(id)?.getElementsByClassName('data-value')[0] as HTMLSpanElement;
+      if (dataValue) {
+        dataValue.innerText = value.value;
+      }
+    })
   }
 
   public createParametersView(parameters: Parameter[]) {
+    this.parametersView.innerHTML = '';
+
     let formElement = document.createElement('form') as HTMLFormElement;
 
     for (let i = 0; i < parameters.length; i++) {
@@ -124,7 +128,7 @@ export class View implements OnParameterChanged {
     }
     this.parametersSubmit = document.createElement('input') as HTMLInputElement;
     this.parametersSubmit.type = 'submit';
-    this.parametersSubmit.innerText = "Valider"
+    this.parametersSubmit.value = 'Valider';
 
     formElement.appendChild(this.parametersSubmit);
     formElement.onsubmit = (event) => {
@@ -163,11 +167,13 @@ export class View implements OnParameterChanged {
     this.canSubmitParameters(false);
   }
 
-  public updateDataValue(value: Value) {
-    const id = 'data-' + value.id;
-    let dataValue = document.getElementById(id)?.getElementsByClassName('data-value')[0] as HTMLSpanElement;
-    if (dataValue) {
-      dataValue.innerText = value.value;
+  public onParametersChanged(id:number): void {
+    this.canSubmitParameters(true);
+  }
+
+  private canSubmitParameters(canSubmit: boolean) {
+    if (this.parametersSubmit) {
+      this.parametersSubmit.disabled = !canSubmit;
     }
   }
 }

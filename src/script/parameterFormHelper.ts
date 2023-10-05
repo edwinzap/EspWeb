@@ -56,6 +56,8 @@ export class ParameterFormHelper {
                 break;
             case InputType.Number:
                 inputElement.type = 'number';
+                inputElement.step = 'any';
+                break;
         }
 
         if (parameter.unit) {

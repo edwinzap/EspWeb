@@ -20,7 +20,7 @@ export class Controller {
   private readonly wsDataValuePath = `ws://${window.location.hostname}/data-value`;
   private readonly wsParametersViewPath = `ws://${window.location.hostname}/parameters-view`;
   private wsDataView: WebSocketHelper<Data[]>;
-  private wsDataValue: WebSocketHelper<Value>;
+  private wsDataValue: WebSocketHelper<Value[]>;
   private wsParametersView: WebSocketHelper<Parameter[]>;
 
   constructor() {
@@ -44,7 +44,7 @@ export class Controller {
     //this.wsDataView.bindOnOpen = () => this.onParametersWebSocketOpen();
 
     this.wsDataValue = new WebSocketHelper(this.wsDataValuePath);
-    this.wsDataValue.bindMessageEvent = (value) => this.onWsDataValueReceived(value);
+    this.wsDataValue.bindMessageEvent = (values) => this.onWsDataValuesReceived(values);
     //this.wsDataValue.bindOnOpen = () => this.onParametersWebSocketOpen();
 
     this.wsParametersView = new WebSocketHelper(this.wsParametersViewPath);
@@ -56,8 +56,8 @@ export class Controller {
     this.view.createDataView(data);
   }
 
-  private onWsDataValueReceived(value: Value) {
-    this.view.updateDataValue(value);
+  private onWsDataValuesReceived(values: Value[]) {
+    this.view.updateDataValues(values);
   }
 
   private onWsParametersViewReceived(parameters: Parameter[]) {
@@ -65,8 +65,9 @@ export class Controller {
   }
 
   private onParametersSubmit(values: Value[]) {
-    console.log("Parameters send");
     console.log(values);
+    let json = JSON.stringify(values);
+    console.log(json);
   }
 
   //#region Fake
@@ -75,7 +76,7 @@ export class Controller {
     this.onWsParametersViewReceived(this.generateFakeParameters());
     setInterval(() => {
       const value = 100 + Math.floor(Math.random() * 100);
-      this.onWsDataValueReceived(new Value(3, value.toString()))
+      this.onWsDataValuesReceived([new Value(3, value.toString())])
     }, 5000)
   }
 
@@ -98,7 +99,7 @@ export class Controller {
 
     let parameter2 = new Parameter(2, 'Nom', InputType.Text, 'Forget');
 
-    let parameter3 = new Parameter(3, 'Taille', InputType.Number, '172');
+    let parameter3 = new Parameter(3, 'Taille', InputType.Number, '172.3');
     parameter3.unit = "cm";
 
     let parameter4 = new Parameter(4, 'Date de naissance', InputType.Date, "1995-05-09");
@@ -114,7 +115,7 @@ export class Controller {
     let parameter6 = new Parameter(6, 'Sexe', InputType.Radio, "m");
     parameter6.options = [
       new InputOption("f", "Femme"),
-      new InputOption("m", "Homme"),
+      new InputOption("h", "Homme"),
     ];
 
     parameters.push(parameter1, parameter2, parameter3, parameter4, parameter5, parameter6);

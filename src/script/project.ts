@@ -1,3 +1,3 @@
 export class Project {
-    static title:string = "Mon projet";
+    static title:string = "Tralala";
 }
