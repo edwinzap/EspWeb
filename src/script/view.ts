@@ -1,4 +1,4 @@
-import { Project } from "./project";
+import { Project } from "./project.js";
 
 /**
  * "view.ts" contient les fonctions/éléments permettant d'initialiser et d'accéder aux éléments visuels de la page.
